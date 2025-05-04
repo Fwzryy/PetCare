@@ -5,47 +5,37 @@ import json
 import os
 
 # Inisialisasi tampilan GUI
-ctk.set_appearance_mode("light")  # set ke mode light bisa juga "dark"
-ctk.set_default_color_theme("dark-blue")  # Tema warna biru
+ctk.set_appearance_mode("light")  
+ctk.set_default_color_theme("dark-blue")  
 
-# Struktur data antrian dan riwayat menggunakan deque dan list
-queue = deque()  # Antrian pasien
-riwayat = []  # Riwayat pasien yang sudah selesai
+queue = deque() 
+riwayat = []  
 
-# Nama file untuk menyimpan data antrian
 FILE_QUEUE = "queue.json"
 
-# Fungsi untuk menyimpan antrian ke file JSON
-#-Fungsi ini akan menyimpan isi antrian (queue) ke dalam file queue.json
-# Jika file belum ada, maka akan dibuat otomatis
-# Format penyimpanan adalah JSON
-
 def simpan_queue():
-  with open(FILE_QUEUE, "w") as file_antrian:  # Membuka (atau membuat) file JSON untuk ditulis
-    data = list(queue)  # Mengubah deque menjadi list biasa agar bisa disimpan ke JSON ([]) -> ()
-    json.dump(data, file_antrian)  # Menyimpan data ke file dalam format JSON
-
-# Fungsi untuk memuat antrian dari file JSON saat program dijalankan
-# Jika file queue.json ada, maka isinya dibaca dan dimasukkan ke queue
+  with open(FILE_QUEUE, "w") as file_antrian: 
+    data = list(queue)
+    json.dump(data, file_antrian) 
 
 def muat_queue():
-  if os.path.exists(FILE_QUEUE):  # Mengecek apakah file antrian sudah ada
-    with open(FILE_QUEUE, "r") as file_antrian:  # Membuka file JSON dalam mode baca
-      data = json.load(file_antrian)  # Membaca isi file dan mengubahnya menjadi list Python
-      for pasien in data:  # Menambahkan tiap pasien dari file ke dalam queue
+  if os.path.exists(FILE_QUEUE):
+    with open(FILE_QUEUE, "r") as file_antrian:
+      data = json.load(file_antrian)
+      for pasien in data:
         queue.append(pasien)
 
 # Fungsi untuk memperbarui tampilan daftar antrian di textbox GUI
 def update_tampilan_antrian():
-  antrian_textbox.configure(state="normal")  # Mengaktifkan textbox supaya bisa diubah
-  antrian_textbox.delete("1.0", "end")  # Menghapus seluruh isi dari textbox dari 1 hingga akhir
-  if queue:  # Jika queue ada isinya jalankan for
-    for i, pasien in enumerate(queue, 1):  # Loop setiap pasien dengan nomor urut mulai dari 1
-      estimasi = i * 5  # Estimasi waktu tunggu 5 menit per pasien
+  antrian_textbox.configure(state="normal")
+  antrian_textbox.delete("1.0", "end")
+  if queue: 
+    for i, pasien in enumerate(queue, 1): 
+      estimasi = i * 5 
       antrian_textbox.insert("end", f"{i}. {pasien['nama']} 🐾 {pasien['jenis']} - {pasien['keluhan']} | ⏳ {estimasi} menit\n")
   else:
-    antrian_textbox.insert("end", "Belum ada pasien dalam antrean.")  # Jika kosong
-  antrian_textbox.configure(state="disabled")  # Mengunci kembali textbox agar tidak bisa diketik
+    antrian_textbox.insert("end", "Belum ada pasien dalam antrean.")
+  antrian_textbox.configure(state="disabled")  
 
 # Fungsi untuk memperbarui tampilan riwayat pasien
 def update_tampilan_riwayat():
@@ -53,43 +43,42 @@ def update_tampilan_riwayat():
   riwayat_textbox.delete("1.0", "end")
   if riwayat:
     for i, pasien in enumerate(riwayat, 1):
-      riwayat_textbox.insert("end", f"{i}. {pasien['nama']} 🐾 {pasien['jenis']} - Selesai\n")  # Menampilkan pasien selesai
+      riwayat_textbox.insert("end", f"{i}. {pasien['nama']} 🐾 {pasien['jenis']} - Selesai\n") 
   else:
     riwayat_textbox.insert("end", "Belum ada pasien yang selesai.")
   riwayat_textbox.configure(state="disabled")
 
 # Fungsi untuk menambahkan pasien baru ke antrian
 def tambah_pasien():
-  nama = input_nama.get().strip()  # Ambil input nama dan hapus spasi di ujung
-  jenis = pilihan_jenis.get()  # Ambil jenis hewan dari combo box
-  keluhan = input_keluhan.get().strip()  # Ambil input keluhan
+  nama = input_nama.get().strip() 
+  jenis = pilihan_jenis.get() 
+  keluhan = input_keluhan.get().strip() 
 
-  if not nama or not jenis or not keluhan:  # Validasi: input gaboleh kosong harus isi nama,jenis,keluhan
+  if not nama or not jenis or not keluhan:
     CTkMessagebox(title="Error", message="Semua data harus diisi!", icon="cancel")
     return
 
-  pasien = {"nama": nama, "jenis": jenis, "keluhan": keluhan}  # Buat data pasien dalam dictionary
-  queue.append(pasien)  # Tambah pasien ke antrian
-  simpan_queue()  # Simpan ke file
+  pasien = {"nama": nama, "jenis": jenis, "keluhan": keluhan}
+  queue.append(pasien)
+  simpan_queue()
 
-  input_nama.delete(0, "end")  # Kosongkan form input nama
-  input_keluhan.delete(0, "end")  # Kosongkan form input keluhan
-  pilihan_jenis.set("")  # Reset pilihan jenis
+  input_nama.delete(0, "end") 
+  input_keluhan.delete(0, "end")  
+  pilihan_jenis.set("") 
 
-  update_tampilan_antrian()  # Update tampilan daftar antrian
+  update_tampilan_antrian()  
 
 # Fungsi untuk memanggil pasien pertama dalam antrian
-
 def panggil_pasien():
   if queue:
-    pasien = queue.popleft()  # Ambil pasien pertama dari antrian
-    riwayat.append(pasien)  # Masukkan ke riwayat
-    simpan_queue()  # Simpan data antrian
-    update_tampilan_antrian()  # Update tampilan antrian
-    update_tampilan_riwayat()  # Update tampilan riwayat
-    CTkMessagebox(title="Panggilan", message=f"📣 Giliran {pasien['nama']} untuk konsultasi!", icon="info")  # Munculkan notifikasi
+    pasien = queue.popleft() 
+    riwayat.append(pasien)
+    simpan_queue() 
+    update_tampilan_antrian() 
+    update_tampilan_riwayat()  
+    CTkMessagebox(title="Panggilan", message=f"📣 Giliran {pasien['nama']} untuk konsultasi!", icon="info") 
   else:
-    CTkMessagebox(title="Info", message="Tidak ada pasien dalam antrean.", icon="info")  # Jika tidak ada pasien
+    CTkMessagebox(title="Info", message="Tidak ada pasien dalam antrean.", icon="info")  
 
 '''
 ↓
@@ -101,7 +90,7 @@ def panggil_pasien():
 app = ctk.CTk()
 app.title("PetCare - Klinik Hewan")
 app.geometry("720x480")
-app.resizable(False, False)# Ukuran tidak bisa diubah
+app.resizable(False, False)
 # - HEADER
 judul = ctk.CTkLabel(app, text="🐾 PetCare - Sistem Antrean Klinik Hewan", font=ctk.CTkFont(size=20, weight="bold"))
 judul.pack(pady=(20, 10))
