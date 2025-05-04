@@ -29,7 +29,7 @@ def simpan_queue():
 # Jika file queue.json ada, maka isinya dibaca dan dimasukkan ke queue
 
 def muat_queue():
-  if os.path.exists(FILE_QUEUE):  # Mengecek apakah file antrian sudah ada
+  if os.path.exists(FILE_QUEUE):  # Mengecek apakah file antrian sudah ada di komputer (os)
     with open(FILE_QUEUE, "r") as file_antrian:  # Membuka file JSON dalam mode baca
       data = json.load(file_antrian)  # Membaca isi file dan mengubahnya menjadi list Python
       for pasien in data:  # Menambahkan tiap pasien dari file ke dalam queue
